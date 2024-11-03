@@ -1,4 +1,4 @@
-package com.example.jsonschemavalidation.requests;
+package com.example.jsonschemavalidation.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;

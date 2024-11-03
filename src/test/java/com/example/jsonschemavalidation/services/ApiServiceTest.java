@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,6 +34,9 @@ public class ApiServiceTest {
     @InjectMocks
     private ApiService apiService;
 
+    String validData;
+    String invalidData;
+
     ApiDetails apiDetails = new ApiDetails();
 
     @BeforeEach
@@ -40,6 +45,13 @@ public class ApiServiceTest {
 
         String jsonSchema = """
                     {"$schema":"https://json-schema.org/draft-07/schema#","title":"Add person event","description":"add person event for jsonschema","type":"object","properties":{"name":{"type":"string"},"age":{"type":"integer","minimum":18}}}
+                """;
+
+        validData = """
+                    {"name":"John","age":18}
+                """;
+        invalidData = """
+                    {"name":"John","age":10}
                 """;
 
         apiDetails.setId(1L);
@@ -63,6 +75,34 @@ public class ApiServiceTest {
         when(apiRepository.save(apiDetails)).thenThrow(new DataIntegrityViolationException("Unique constraint violated"));
 
         assertThrows(DataIntegrityViolationException.class, () -> apiService.saveApi(apiDetails));
+    }
+
+    @Test
+    public void validateApiSuccess() {
+        when(apiRepository.findByApiIdentifier(apiDetails.getApiIdentifier())).thenReturn(Optional.of(apiDetails));
+
+        String validationResult = apiService.validateApi(apiDetails.getApiIdentifier(), createJsonNodeFromString(validData));
+
+        assertThat(validationResult).isNull();
+    }
+
+    @Test
+    public void validateApiError() {
+        when(apiRepository.findByApiIdentifier(apiDetails.getApiIdentifier())).thenReturn(Optional.of(apiDetails));
+
+        String validationResult = apiService.validateApi(apiDetails.getApiIdentifier(), createJsonNodeFromString(invalidData));
+
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult).contains("[$.age: must have a minimum value of 18]");
+    }
+
+    @Test
+    public void validateApiInvalidApiIdentifier() {
+        when(apiRepository.findByApiIdentifier(102L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> apiService.validateApi(102L, createJsonNodeFromString(validData)));
+
+        assertThat(exception.getMessage()).isEqualTo("Invalid API identifier: 102");
     }
 
     public JsonNode createJsonNodeFromString(String jsonSchema) {

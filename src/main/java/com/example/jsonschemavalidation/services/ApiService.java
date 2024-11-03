@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.View;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,20 +20,26 @@ public class ApiService {
 
     @Autowired
     private ApiRepository apiRepository;
-    @Autowired
-    private View error;
 
     public ApiDetails saveApi(ApiDetails apiDetails) {
+
+        Optional<ApiDetails> existingApi = apiRepository.findByApiIdentifier(apiDetails.getApiIdentifier());
+
+        if(!existingApi.isEmpty()) {
+            throw new IllegalArgumentException("API identifier "  + apiDetails.getApiIdentifier() + " already exists.");
+        }
+
         return apiRepository.save(apiDetails);
     }
 
     public String validateApi(Long apiIdentifier, JsonNode data) {
-        ApiDetails apiDetails = apiRepository.findByApiIdentifier(apiIdentifier).orElseThrow(() -> new IllegalArgumentException("Invalid API identifier: " + apiIdentifier));
+        ApiDetails apiDetails = apiRepository.findByApiIdentifier(apiIdentifier)
+                .orElseThrow(() -> new NoSuchElementException("API identifier " + apiIdentifier + " not found."));
 
         //json schema
         JsonNode apiSchemaJson = apiDetails.getApiSchema();
 
-        // Validate the request body against the API schema
+        // Validate the data against the API schema
         JsonSchema jsonSchema = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7).getSchema(apiSchemaJson); //apiSchemaJson may need convert to toString()
 
         Set<ValidationMessage> errors = jsonSchema.validate(data);
