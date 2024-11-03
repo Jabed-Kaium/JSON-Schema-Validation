@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,9 +107,9 @@ public class ApiServiceTest {
     public void validateApiInvalidApiIdentifier() {
         when(apiRepository.findByApiIdentifier(102L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> apiService.validateApi(102L, createJsonNodeFromString(validData)));
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> apiService.validateApi(102L, createJsonNodeFromString(validData)));
 
-        assertThat(exception.getMessage()).isEqualTo("Invalid API identifier: 102");
+        assertThat(exception.getMessage()).isEqualTo("API identifier 102 not found.");
     }
 
     public JsonNode createJsonNodeFromString(String jsonSchema) {
