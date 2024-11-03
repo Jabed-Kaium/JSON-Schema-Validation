@@ -10,9 +10,7 @@ import com.networknt.schema.ValidationMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ApiService {
@@ -26,6 +24,16 @@ public class ApiService {
 
         if(!existingApi.isEmpty()) {
             throw new IllegalArgumentException("API identifier "  + apiDetails.getApiIdentifier() + " already exists.");
+        }
+        if( apiDetails.getApiIdentifier() == null || apiDetails.getApiSchema() == null) {
+            List<String> errorMessages = new ArrayList<>();
+            if(apiDetails.getApiIdentifier() == null) {
+                errorMessages.add("API identifier cannot be null");
+            }
+            if(apiDetails.getApiSchema() == null) {
+                errorMessages.add("API schema cannot be null");
+            }
+            throw new IllegalArgumentException("Invalid request " + errorMessages);
         }
 
         return apiRepository.save(apiDetails);

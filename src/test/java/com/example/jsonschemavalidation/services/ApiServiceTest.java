@@ -75,6 +75,15 @@ public class ApiServiceTest {
     }
 
     @Test
+    void saveApi_WhenApiDetailsIsNull_ShouldThrowNullPointerException() {
+        // Act & Assert
+        assertThrows(
+                NullPointerException.class,
+                () -> apiService.saveApi(null)
+        );
+    }
+
+    @Test
     public void validateApiSuccess() {
         when(apiRepository.findByApiIdentifier(apiDetails.getApiIdentifier())).thenReturn(Optional.of(apiDetails));
 
