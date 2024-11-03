@@ -2,8 +2,6 @@ package com.example.jsonschemavalidation.services;
 
 import com.example.jsonschemavalidation.models.ApiDetails;
 import com.example.jsonschemavalidation.repositories.ApiRepository;
-import com.example.jsonschemavalidation.repositories.ApiRepositoryTest;
-import com.example.jsonschemavalidation.utils.JsonNodeConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
